@@ -26,10 +26,10 @@ public class SelectHolds : MonoBehaviour
 
     void Update()
     {
-        selectHold();
-        dragHold();
-        rotateHold();
-        resizeHold();
+        select();
+        drag();
+        rotate();
+        resize();
 
         if (Input.GetKeyDown(KeyCode.R))
             enableRotationMode = !enableRotationMode;
@@ -45,16 +45,17 @@ public class SelectHolds : MonoBehaviour
     }
 
     // select a hold (or deselect a hold if clicking nothing)
-    private void selectHold()
+    private void select()
     {
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = camera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100, holdsLM))
             {
-                selectedHoldSettings?.EnableOutline(false);
+                if (selectedHold)
+                    selectedHoldSettings?.EnableOutline(false);
+
                 selectedHold = hit.transform.parent;
-                Debug.Log(selectedHold);
                 selectedHoldSettings = selectedHold.GetComponent<HoldSettings>();
                 selectedHoldSettings.EnableOutline(true);
 
@@ -69,7 +70,23 @@ public class SelectHolds : MonoBehaviour
         }
     }
 
-    private void dragHold()
+    public void Select(Transform hold)
+    {
+        if (selectedHold)
+        {
+            Debug.Log("bruh");
+            selectedHoldSettings?.EnableOutline(false);
+        }
+
+        selectedHold = hold;
+        selectedHoldSettings = selectedHold.GetComponent<HoldSettings>();
+        selectedHoldSettings.EnableOutline(true);
+
+        isDragging = true;
+        initialDragOffset = camera.ScreenToWorldPoint(Input.mousePosition) - selectedHold.transform.position;
+    }
+
+    private void drag()
     {
         if (!selectedHold)
             return;
@@ -81,7 +98,7 @@ public class SelectHolds : MonoBehaviour
             isDragging = false;
     }
 
-    private void rotateHold()
+    private void rotate()
     {
         if (!selectedHold)
             return;
@@ -98,7 +115,7 @@ public class SelectHolds : MonoBehaviour
             modeTxt.text = "Mode: Movement";
     }
 
-    private void resizeHold()
+    private void resize()
     {
         if (!selectedHold)
             return;

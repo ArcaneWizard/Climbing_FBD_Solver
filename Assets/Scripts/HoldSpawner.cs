@@ -31,14 +31,14 @@ public class HoldSpawner : MonoBehaviour
             RemoveHold();
     }
 
-    public void AddHold()
+    private void AddHold()
     {
         Transform hold = Instantiate(prefabHold, transform.position, Quaternion.identity, transform);
         holds.Add(hold);
+        selectHolds.Select(hold);
     }
 
-
-    public void RemoveHold()
+    private void RemoveHold()
     {
         Transform hold = selectHolds.selectedHold;
         if (!hold || !holds.Contains(hold))

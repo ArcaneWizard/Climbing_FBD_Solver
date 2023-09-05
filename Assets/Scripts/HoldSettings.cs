@@ -25,12 +25,13 @@ public class HoldSettings : MonoBehaviour
         forceArrow = transform.GetComponent<LineRenderer>();
         forceReading = transform.GetChild(1).GetComponent<TextMeshPro>();
         outline = transform.GetChild(0).AddComponent<Outline>();
+
+        outline.color = 0;
     }
 
     void Start()
     {
         LimbType = HoldLimbType.Feet;
-        outline.color = 0;
         force = 1f;
     }
 
@@ -54,7 +55,10 @@ public class HoldSettings : MonoBehaviour
             SetToFeetType();
     }
 
-    public void EnableOutline(bool on) => outline.color = (on) ? 1 : 0;
+    public void EnableOutline(bool on)
+    {
+        outline.color = (on) ? 1 : 0;
+    }
 
     public void SetToArmType()
     {
