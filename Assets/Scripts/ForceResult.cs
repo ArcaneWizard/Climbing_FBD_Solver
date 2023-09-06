@@ -3,39 +3,55 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ForceResult : IComparable<ForceResult>
+public class PositionResult : IComparable<PositionResult>
 {
-    public float MaxHandForce { get; set; }
-    public float MinHandForce { get; set; }
-    public float Hand1, Hand2, Foot1, Foot2;
+    public List<HoldInfo> holdsInfo { get; set; }
+    public float MaxHandForceMagnitude { get; set; }
+    public float MinHandForceMagnitude { get; set; }
 
-    public ForceResult(float hand1, float hand2, float foot1, float foot2)
+    public PositionResult(List<HoldInfo> info, float maxHandForceMag, float minHandForceMag)
     {
-        Hand1 = hand1;
-        Hand2 = hand2;
-        Foot1 = foot1;
-        Foot2 = foot2;
+        if (maxHandForceMag < 0 || minHandForceMag < 0)
+            Debug.LogError("a force's magnitude cannot be negative");
 
-        MaxHandForce =  Math.Max(hand1, hand2);
-        MinHandForce= Math.Min(hand1, hand2);
+        holdsInfo = info;
+        MaxHandForceMagnitude = maxHandForceMag;
+        MinHandForceMagnitude = minHandForceMag;
     }
 
-    public ForceResult(Vector4 forces)
+    public PositionResult(Vector4 forces, Transform arm1, Transform arm2, Transform foot1, Transform foot2)
     {
-        Hand1 = forces.x;
-        Hand2 = forces.y;
-        Foot1 = forces.z;
-        Foot2 = forces.w;
+        holdsInfo = new List<HoldInfo>
+        {
+            new HoldInfo(arm1, forces.x),
+            new HoldInfo(arm2, forces.y),
+            new HoldInfo(foot1, forces.z),
+            new HoldInfo(foot2, forces.w)
+        };
 
-        MaxHandForce = Math.Max(Math.Abs(Hand1), Math.Abs(Hand2));
-        MinHandForce = Math.Min(Math.Abs(Hand1), Math.Abs(Hand2));
+        MaxHandForceMagnitude = Math.Max(Math.Abs(forces.x), Math.Abs(forces.y));
+        MinHandForceMagnitude = Math.Min(Math.Abs(forces.x), Math.Abs(forces.y));
     }
 
-    public int CompareTo(ForceResult other)
+    public override String ToString() => $"Max Hand Force: {MaxHandForceMagnitude}";
+
+    public int CompareTo(PositionResult other)
     {
-        if (MaxHandForce != other.MaxHandForce)
-            return MaxHandForce.CompareTo(other.MaxHandForce);
+        if (MaxHandForceMagnitude != other.MaxHandForceMagnitude)
+            return MaxHandForceMagnitude.CompareTo(other.MaxHandForceMagnitude);
         else
-            return MinHandForce.CompareTo(other.MinHandForce);
+            return MinHandForceMagnitude.CompareTo(other.MinHandForceMagnitude);
+    }
+}
+
+public class HoldInfo
+{
+    public HoldSettings Hold { get; set; }
+    public float Force { get; set; }
+
+    public HoldInfo(Transform hold, float force)
+    {
+        Hold = hold.GetComponent<HoldSettings>();
+        Force = force;
     }
 }

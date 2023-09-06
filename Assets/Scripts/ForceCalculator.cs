@@ -13,8 +13,13 @@ public class ForceCalculator : MonoBehaviour
     [SerializeField] private bool useStaticFriction;
 
     private const float MAX_SAFE_ROTATION_OF_UPPER_BODY = 30;
+    private List<PositionResult> results;
 
-    void Awake() => spawner = transform.GetComponent<HoldSpawner>();
+    void Awake()
+    {
+        spawner = transform.GetComponent<HoldSpawner>();
+        results = new List<PositionResult>();
+    }
 
     void Start()
     {
@@ -23,6 +28,41 @@ public class ForceCalculator : MonoBehaviour
         pivotForce = 0.5f;
         useStaticFriction = true;
         staticFrictionCoefficient = 0.3f;
+    }
+
+    public List<PositionResult> CalculateIdealForces()
+    {
+        var armHolds = new List<Transform>();
+        var footHolds = new List<Transform>();
+
+        foreach (Transform hold in spawner.Holds)
+        {
+            if (hold.GetComponent<HoldSettings>().LimbType == HoldLimbType.Arms)
+                armHolds.Add(hold);
+            else
+                footHolds.Add(hold);
+        }
+
+        if (useStaticFriction)
+        {
+            var newResults = new List<PositionResult>();
+            for (int i = -50; i <= 50; i++)
+            {
+                PositionResult result = solveFourLimbs(armHolds[0], armHolds[1], footHolds[0], footHolds[1], i / 50f);
+                newResults.Add(result);
+            }
+
+            newResults.Sort();
+            results = newResults;
+        }
+        else
+        {
+            PositionResult result = solveFourLimbs(armHolds[0], armHolds[1], footHolds[0], footHolds[1], 1f);
+            results.Clear();
+            results.Add(result);
+        }
+
+        return results;
     }
 
     // try test cases and throw error if one fails
@@ -46,28 +86,6 @@ public class ForceCalculator : MonoBehaviour
     // returns whether the two specified floats are equal (negligible difference)
     private bool isEqual(float a, float b) => Mathf.Abs(a - b) < 0.001f;
 
-
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            var armHolds = new List<Transform>();
-            var footHolds = new List<Transform>();
-
-            foreach (Transform hold in spawner.Holds)
-            {
-                if (hold.GetComponent<HoldSettings>().LimbType == HoldLimbType.Arms)
-                    armHolds.Add(hold);
-                else
-                    footHolds.Add(hold);
-            }
-
-            for (int i = -50; i <= 50; i++)
-                solveFourLimbs(armHolds[0], armHolds[1], footHolds[0], footHolds[1], i/50f);
-        }
-    }
-
-
     // Note: hold1 is pivot hold
     private void solveTwoLimbs(Transform hold1, Transform hold2) {}
 
@@ -75,10 +93,8 @@ public class ForceCalculator : MonoBehaviour
     private void solveThreeLimbs(List<Transform> armHold, List<Transform> footHold) { }
 
     // Note: foot1 is pivot foot
-    private ForceResult solveFourLimbs(Transform arm1, Transform arm2, Transform foot1, Transform foot2, float frictionMultiplier)
+    private PositionResult solveFourLimbs(Transform arm1, Transform arm2, Transform foot1, Transform foot2, float frictionMultiplier)
     {
-        Debug.Log(body.GetCOG());
-
         // pivot axis spans from pivot foot hold to center of gravity
         Vector2 pivotAxis = (body.GetCOG() - foot1.position).normalized;
 
@@ -115,7 +131,7 @@ public class ForceCalculator : MonoBehaviour
 
         Vector4 b = new Vector4(1, 0, -gravityTorque, pivotForce);
         var solution = a.inverse * b;
-        return new ForceResult(solution);
+        return new PositionResult(solution, arm1, arm2, foot1, foot2);
 
         /* 4 equations to solve:
         

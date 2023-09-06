@@ -8,7 +8,7 @@ using TMPro;
 public class HoldSettings : ISettings
 {
     [field: SerializeField] public HoldLimbType LimbType { get; private set; }
-    [Range(0f, 2f)] public float force;
+    private float force;
     private const float ARROW_SIZE_FOR_BODY_WEIGHT = 2f;
 
     private LineRenderer forceArrow;
@@ -18,6 +18,20 @@ public class HoldSettings : ISettings
     [SerializeField] private Material armMaterial;
     [SerializeField] private Material footMaterial;
 
+    public void SetForce(float force) => this.force = force;
+
+    public void SetToArmType()
+    {
+        LimbType = HoldLimbType.Arms;
+        renderer.material = armMaterial;
+    }
+
+    public void SetToFeetType()
+    {
+        LimbType = HoldLimbType.Feet;
+        renderer.material = footMaterial;
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -26,10 +40,7 @@ public class HoldSettings : ISettings
         forceReading = transform.GetChild(1).GetComponent<TextMeshPro>();
     }
 
-    void Start()
-    {
-        force = 1f;
-    }
+    void Start() => force = 1f;
 
     void Update()
     {
@@ -49,18 +60,5 @@ public class HoldSettings : ISettings
             SetToArmType();
         else
             SetToFeetType();
-    }
-
-
-    public void SetToArmType()
-    {
-        LimbType = HoldLimbType.Arms;
-        renderer.material = armMaterial;
-    }
-
-    public void SetToFeetType()
-    {
-        LimbType = HoldLimbType.Feet;
-        renderer.material = footMaterial;
     }
 }
