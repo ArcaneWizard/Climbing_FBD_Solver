@@ -11,7 +11,7 @@ public class Selector : MonoBehaviour
     [SerializeField] private TextMeshProUGUI modeTxt;
 
     public Transform selected { get; private set; }
-    private Settings settings;
+    private ISettings settings;
     private LayerMask holdsOrBody = (1 << 6) | (1 << 7);
 
     private bool isDragging;
@@ -38,9 +38,9 @@ public class Selector : MonoBehaviour
         if (selected && settings.IsHold())
         {
             if (Input.GetKeyDown(KeyCode.Q))
-                settings.SetToArmType();
+                ((HoldSettings)settings).SetToArmType();
             else if (Input.GetKeyDown(KeyCode.W))
-                settings.SetToFeetType();
+                ((HoldSettings)settings).SetToFeetType();
         }
     }
 
@@ -56,7 +56,7 @@ public class Selector : MonoBehaviour
                     settings?.EnableOutline(false);
 
                 selected = hit.transform.parent;
-                settings = selected.GetComponent<Settings>();
+                settings = selected.GetComponent<ISettings>();
                 settings.EnableOutline(true);
 
                 isDragging = true;
@@ -76,7 +76,7 @@ public class Selector : MonoBehaviour
             settings?.EnableOutline(false);
 
         selected = transform;
-        settings = selected.GetComponent<Settings>();
+        settings = selected.GetComponent<ISettings>();
         settings.EnableOutline(true);
 
         isDragging = true;
