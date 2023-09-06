@@ -5,13 +5,13 @@ using UnityEngine;
 public class HoldSpawner : MonoBehaviour
 {
     [SerializeField] private Transform prefabHold;
-    public HashSet<Transform> Holds { get; set; }
-    private Selector selectHolds;
+    public HashSet<Transform> AllHolds { get; set; }
+    private Selector selector;
 
     void Awake()
     {
-        Holds = new HashSet<Transform>();
-        selectHolds = transform.GetComponent<Selector>();
+        AllHolds = new HashSet<Transform>();
+        selector = transform.GetComponent<Selector>();
     }
 
     void Start()
@@ -19,7 +19,7 @@ public class HoldSpawner : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
         {
             Transform hold = transform.GetChild(i);
-            Holds.Add(hold);
+            AllHolds.Add(hold);
         }
     }
 
@@ -34,17 +34,17 @@ public class HoldSpawner : MonoBehaviour
     private void AddHold()
     {
         Transform hold = Instantiate(prefabHold, transform.position, Quaternion.identity, transform);
-        Holds.Add(hold);
-        selectHolds.Select(hold);
+        AllHolds.Add(hold);
+        selector.Select(hold);
     }
 
     private void RemoveHold()
     {
-        Transform hold = selectHolds.selected;
-        if (!hold || !Holds.Contains(hold))
+        Transform selected = selector.selected;
+        if (!selected || !AllHolds.Contains(selected))
             return;
 
-        Holds.Remove(hold);
-        Destroy(hold.gameObject);
+        AllHolds.Remove(selected);
+        Destroy(selected.gameObject);
     }
 }

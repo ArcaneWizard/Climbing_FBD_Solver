@@ -5,10 +5,11 @@ using cakeslice;
 using Unity.VisualScripting;
 using TMPro;
 
-public class HoldSettings : ISettings
+public class Hold : SelectableObject
 {
     [field: SerializeField] public HoldLimbType LimbType { get; private set; }
     private float force;
+    private bool enableForceArrow;
     private const float ARROW_SIZE_FOR_BODY_WEIGHT = 2f;
 
     private LineRenderer forceArrow;
@@ -19,6 +20,8 @@ public class HoldSettings : ISettings
     [SerializeField] private Material footMaterial;
 
     public void SetForce(float force) => this.force = force;
+
+    public void EnableForceArrow(bool on) => enableForceArrow = on;
 
     public void SetToArmType()
     {
@@ -40,15 +43,25 @@ public class HoldSettings : ISettings
         forceReading = transform.GetChild(1).GetComponent<TextMeshPro>();
     }
 
-    void Start() => force = 1f;
+    void Start()
+    {
+        enableForceArrow = true;
+        force = 1f;
+    }
 
     void Update()
     {
-        forceArrow.SetPosition(1, new Vector3(0, force * ARROW_SIZE_FOR_BODY_WEIGHT, 0));
-        forceArrow.startWidth = Mathf.Min(force, 1f);
-        forceArrow.endWidth = Mathf.Min(force, 1f);
+        forceArrow.SetPosition(1, new Vector3(0, force * ARROW_SIZE_FOR_BODY_WEIGHT * (enableForceArrow ? 1 : 0), 0));
+        float width = force;
+        if (width > 1f)
+            width = 1f;
+        else if (width < 0.15f)
+            width = 0.15f;
 
-        forceReading.text = string.Format("{0:F1}", force);
+        forceArrow.startWidth = width;
+        forceArrow.endWidth = width;
+
+        forceReading.text = string.Format("{0:F2}", force);
         forceReading.transform.right = Vector3.right;
     }
 

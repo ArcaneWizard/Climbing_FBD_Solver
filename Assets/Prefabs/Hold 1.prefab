@@ -220,7 +220,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <LimbType>k__BackingField: 0
-  force: 0
   armMaterial: {fileID: 2100000, guid: 962f121cc6a64914b8eeac7263a25ccd, type: 2}
   footMaterial: {fileID: 2100000, guid: 00108697fdd4e4e45980331b3d623df1, type: 2}
 --- !u!120 &1246498383
@@ -376,7 +375,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 962f121cc6a64914b8eeac7263a25ccd, type: 2}
+  - {fileID: 2100000, guid: 00108697fdd4e4e45980331b3d623df1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

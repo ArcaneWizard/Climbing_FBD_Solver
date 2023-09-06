@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using cakeslice;
 
-public class BodySettings : ISettings
+public class Body : SelectableObject
 {
     [SerializeField] private Transform shoulder1;
     [SerializeField] private Transform shoulder2;

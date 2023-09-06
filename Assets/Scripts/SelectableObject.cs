@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using cakeslice;
 
-public class ISettings : MonoBehaviour
+public class SelectableObject : MonoBehaviour
 {
     private Outline outline;
 
@@ -16,6 +16,5 @@ public class ISettings : MonoBehaviour
     }
 
     public int EnableOutline(bool on) => outline.color = (on ? 1 : 0);
-    public bool IsHold() => this.GetType().Equals(typeof(HoldSettings));
-    public bool Is(Type other) => this.GetType().Equals(other);
+    public bool IsHold() => GetType().Equals(typeof(Hold));
 }
