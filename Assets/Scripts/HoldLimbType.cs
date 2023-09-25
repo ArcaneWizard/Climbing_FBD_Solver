@@ -4,6 +4,6 @@ using UnityEngine;
 
 public enum HoldLimbType
 {
-    Feet,
-    Arms
+    Foot,
+    Hand
 }

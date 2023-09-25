@@ -23,16 +23,10 @@ public class Hold : SelectableObject
 
     public void EnableForceArrow(bool on) => enableForceArrow = on;
 
-    public void SetToArmType()
+    public void SetLimbType(HoldLimbType type)
     {
-        LimbType = HoldLimbType.Arms;
-        renderer.material = armMaterial;
-    }
-
-    public void SetToFeetType()
-    {
-        LimbType = HoldLimbType.Feet;
-        renderer.material = footMaterial;
+        LimbType = type;
+        renderer.material = (type == HoldLimbType.Hand) ? armMaterial : footMaterial;
     }
 
     protected override void Awake()
@@ -52,7 +46,7 @@ public class Hold : SelectableObject
     void Update()
     {
         forceArrow.SetPosition(1, new Vector3(0, force * ARROW_SIZE_FOR_BODY_WEIGHT * (enableForceArrow ? 1 : 0), 0));
-        float width = force;
+        float width = Mathf.Abs(force);
         if (width > 1f)
             width = 1f;
         else if (width < 0.15f)
@@ -65,13 +59,10 @@ public class Hold : SelectableObject
         forceReading.transform.right = Vector3.right;
     }
 
+
     void OnValidate()
     {
         renderer = transform.GetChild(0).GetComponent<Renderer>();
-
-        if (LimbType == HoldLimbType.Arms)
-            SetToArmType();
-        else
-            SetToFeetType();
+        SetLimbType(LimbType);
     }
 }

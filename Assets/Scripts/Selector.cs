@@ -10,8 +10,7 @@ public class Selector : MonoBehaviour
     [SerializeField] private Camera camera;
     [SerializeField] private TextMeshProUGUI modeTxt;
 
-    public Transform selected { get; private set; }
-    private SelectableObject settings;
+    public SelectedObject selected { get; private set; }
     private LayerMask holdsOrBody = (1 << 6) | (1 << 7);
 
     private bool isDragging;
@@ -19,13 +18,25 @@ public class Selector : MonoBehaviour
     private Vector3 initialDragOffset;
     private const float RESIZE_SPEED = 0.6f;
 
-    void Start()
+    public void Select(Transform t)
     {
-        modeTxt.text = "Mode: Movement";
+        if (selected != null)
+            selected.Object?.EnableOutline(false);
+
+        selected = new SelectedObject(t, t.GetComponent<SelectableObject>());
+        selected.Object?.EnableOutline(true);
+
+        isDragging = true;
+        initialDragOffset = camera.ScreenToWorldPoint(Input.mousePosition) - selected.Transform.position;
     }
+
+    void Start() => modeTxt.text = "Mode: Movement";
 
     void Update()
     {
+        if (selected?.Transform == null)
+            selected = null;
+
         select();
         drag();
         rotate();
@@ -34,13 +45,13 @@ public class Selector : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
             enableRotationMode = !enableRotationMode;
 
-        // keys to change the selected hold's limb type
-        if (selected && settings.IsHold())
+        // controls to change the selected hold's limb type
+        if (selected != null && selected.Object.IsHold())
         {
             if (Input.GetKeyDown(KeyCode.Q))
-                ((Hold)settings).SetToArmType();
+                ((Hold)selected.Object).SetLimbType(HoldLimbType.Hand);
             else if (Input.GetKeyDown(KeyCode.W))
-                ((Hold)settings).SetToFeetType();
+                ((Hold)selected.Object).SetLimbType(HoldLimbType.Foot);
         }
     }
 
@@ -52,44 +63,31 @@ public class Selector : MonoBehaviour
             Ray ray = camera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 100, holdsOrBody))
             {
-                if (selected)
-                    settings?.EnableOutline(false);
+                if (selected != null)
+                    selected.Object?.EnableOutline(false);
 
-                selected = hit.transform.parent;
-                settings = selected.GetComponent<SelectableObject>();
-                settings.EnableOutline(true);
+                Transform t = hit.transform.parent;
+                selected = new SelectedObject(t, t.GetComponent<SelectableObject>());
+                selected.Object.EnableOutline(true);
 
                 isDragging = true;
-                initialDragOffset = camera.ScreenToWorldPoint(Input.mousePosition) - selected.transform.position;
+                initialDragOffset = camera.ScreenToWorldPoint(Input.mousePosition) - selected.Transform.position;
             }
             else
             {
-                settings?.EnableOutline(false);
+                selected?.Object?.EnableOutline(false);
                 selected = null;
             }
         }
     }
 
-    public void Select(Transform transform)
-    {
-        if (selected)
-            settings?.EnableOutline(false);
-
-        selected = transform;
-        settings = selected.GetComponent<SelectableObject>();
-        settings.EnableOutline(true);
-
-        isDragging = true;
-        initialDragOffset = camera.ScreenToWorldPoint(Input.mousePosition) - selected.transform.position;
-    }
-
     private void drag()
     {
-        if (!selected)
+        if (selected == null)
             return;
 
         if (isDragging && Input.GetMouseButton(0))
-            selected.position = camera.ScreenToWorldPoint(Input.mousePosition) - initialDragOffset;
+            selected.Transform.position = camera.ScreenToWorldPoint(Input.mousePosition) - initialDragOffset;
 
         if (Input.GetMouseButtonUp(0))
             isDragging = false;
@@ -97,14 +95,14 @@ public class Selector : MonoBehaviour
 
     private void rotate()
     {
-        if (!selected)
+        if (selected == null)
             return;
 
         if (Input.GetMouseButton(1) || enableRotationMode)
         {
             Vector3 worldMousePos = camera.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 dir = new Vector2(worldMousePos.x - selected.position.x, worldMousePos.y - selected.position.y);
-            selected.up = dir;
+            Vector2 dir = new Vector2(worldMousePos.x - selected.Transform.position.x, worldMousePos.y - selected.Transform.position.y);
+            selected.Transform.up = dir;
 
             modeTxt.text = "Mode: Rotation";
         }
@@ -114,11 +112,23 @@ public class Selector : MonoBehaviour
 
     private void resize()
     {
-        if (!selected || !settings.IsHold())
+        if (selected == null || selected.Object.IsHold())
             return;
 
-        Vector3 localScale = selected.transform.GetChild(0).localScale;
+        Vector3 localScale = selected.Transform.GetChild(0).localScale;
         float newXScale = localScale.x + Input.mouseScrollDelta.y * RESIZE_SPEED;
-        selected.transform.GetChild(0).localScale = new Vector3(newXScale, localScale.y, localScale.z);
+        selected.Transform.GetChild(0).localScale = new Vector3(newXScale, localScale.y, localScale.z);
+    }
+}
+
+public class SelectedObject
+{
+    public Transform Transform { get; private set; }
+    public SelectableObject Object { get; private set; }
+
+    public SelectedObject(Transform t, SelectableObject obj)
+    {
+        Transform = t;
+        Object = obj;
     }
 }

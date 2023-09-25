@@ -8,6 +8,7 @@ public class PositionResult : IComparable<PositionResult>
     public List<HoldInfo> holdsInfo { get; set; }
     public float MaxHandForceMagnitude { get; set; }
     public float MinHandForceMagnitude { get; set; }
+    public float MaxLegForceMagnitude { get; set; }
 
     // position result for 2 hand holds + 2 feet holds
     public PositionResult(Vector4 forces, Transform arm1, Transform arm2, Transform foot1, Transform foot2)
@@ -22,24 +23,43 @@ public class PositionResult : IComparable<PositionResult>
 
         MaxHandForceMagnitude = Math.Max(Math.Abs(forces.x), Math.Abs(forces.y));
         MinHandForceMagnitude = Math.Min(Math.Abs(forces.x), Math.Abs(forces.y));
+        MaxLegForceMagnitude = Math.Max(Math.Abs(forces.z), Math.Abs(forces.w));
     }
 
     // position result for any number of holds + hold types
-    public PositionResult(List<HoldInfo> info, float maxHandForceMag, float minHandForceMag)
+    public PositionResult(List<HoldInfo> info)
     {
-        if (maxHandForceMag < 0 || minHandForceMag < 0)
-            Debug.LogError("a force's magnitude cannot be negative");
-
         holdsInfo = info;
-        MaxHandForceMagnitude = maxHandForceMag;
-        MinHandForceMagnitude = minHandForceMag;
+
+        MaxHandForceMagnitude = 0;
+        MinHandForceMagnitude = Int32.MaxValue;
+        MaxLegForceMagnitude = 0;
+
+        foreach (HoldInfo i in info)
+        {
+            if (i.Hold.LimbType == HoldLimbType.Hand)
+            {
+                MaxHandForceMagnitude = Math.Max(MaxHandForceMagnitude, Mathf.Abs(i.Force));
+                MinHandForceMagnitude = Math.Min(MinHandForceMagnitude, Mathf.Abs(i.Force));
+            }
+            else
+                MaxLegForceMagnitude = Math.Max(MaxLegForceMagnitude, Mathf.Abs(i.Force));
+        }
+
+        if (MinHandForceMagnitude == Int32.MaxValue)
+            MinHandForceMagnitude = 0f;
     }
 
     public override String ToString() => $"Max Hand Force: {MaxHandForceMagnitude}";
 
-    // best position has the smallest max hand force magnitude
+    // determine best position
     public int CompareTo(PositionResult other)
     {
+        float score = MaxHandForceMagnitude * 7f + 4f * (MaxHandForceMagnitude + MinHandForceMagnitude);
+        float otherScore = other.MaxHandForceMagnitude * 7f + 4f * (other.MaxHandForceMagnitude + other.MinHandForceMagnitude);
+
+        return score.CompareTo(otherScore);
+
         if (MaxHandForceMagnitude != other.MaxHandForceMagnitude)
             return MaxHandForceMagnitude.CompareTo(other.MaxHandForceMagnitude);
         else

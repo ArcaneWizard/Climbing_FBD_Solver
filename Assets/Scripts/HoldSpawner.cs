@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class HoldSpawner : MonoBehaviour
@@ -40,11 +41,11 @@ public class HoldSpawner : MonoBehaviour
 
     private void RemoveHold()
     {
-        Transform selected = selector.selected;
-        if (!selected || !AllHolds.Contains(selected))
+        SelectedObject selectedObject = selector.selected;
+        if (selectedObject == null || !AllHolds.Contains(selectedObject.Transform))
             return;
 
-        AllHolds.Remove(selected);
-        Destroy(selected.gameObject);
+        AllHolds.Remove(selectedObject.Transform);
+        Destroy(selectedObject.Transform.gameObject);
     }
 }
