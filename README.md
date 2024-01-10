@@ -1,5 +1,8 @@
+**Quick Navigate to [C# Code folder](https://github.com/ArcaneWizard/Climbing_FBD_Solver/tree/master/Assets/Scripts)
+
 # Climbing_FBD_Solver
-Solve a force body diagram with climbing holds based on where you place your center of gravity, the arm holds, and foot holds. You can rotate and place holds, and do a whole lot more in this simulation.
+Solve a force body diagram with climbing holds based on where you place your center of gravity and limbs are relative to arm and foot holds. You can rotate holds, place holds, and do a whole lot more in this simulation.
+It'll even predict heel hooks!
 
 ## Controls
 
